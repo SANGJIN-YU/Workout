@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { WeeklyPoint } from '../lib/volume'
-import { formatWeekLabel } from '../lib/date'
+import { formatNumber, formatWeekLabel } from '../i18n/format'
+import { useTranslation } from '../i18n/LanguageContext'
 
 interface Props {
   points: WeeklyPoint[]
@@ -23,6 +24,7 @@ function niceMax(value: number): number {
 }
 
 export function TrendChart({ points, targetVolumeKg }: Props) {
+  const { t, locale } = useTranslation()
   const [hoverIndex, setHoverIndex] = useState<number | null>(null)
 
   const { path, areaPath, coords, yTicks, maxY } = useMemo(() => {
@@ -53,7 +55,7 @@ export function TrendChart({ points, targetVolumeKg }: Props) {
   if (points.length === 0) {
     return (
       <div className="card trend-chart-empty">
-        <p className="muted">아직 기록이 없습니다. 이번 주 기록을 저장하면 추세 그래프가 나타납니다.</p>
+        <p className="muted">{t('trendChart', 'empty')}</p>
       </div>
     )
   }
@@ -65,11 +67,11 @@ export function TrendChart({ points, targetVolumeKg }: Props) {
 
   return (
     <div className="card viz-root">
-      <h2>주간 총 볼륨 추세</h2>
+      <h2>{t('trendChart', 'title')}</h2>
       <svg
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
         role="img"
-        aria-label="주간 총 볼륨 추세 그래프"
+        aria-label={t('trendChart', 'ariaLabel')}
         onMouseLeave={() => setHoverIndex(null)}
         onMouseMove={(e) => {
           const svg = e.currentTarget
@@ -87,13 +89,13 @@ export function TrendChart({ points, targetVolumeKg }: Props) {
           setHoverIndex(nearest)
         }}
       >
-        {yTicks.map((t, i) => {
-          const y = PAD_TOP + plotHeight - (t / maxY) * plotHeight
+        {yTicks.map((tick, i) => {
+          const y = PAD_TOP + plotHeight - (tick / maxY) * plotHeight
           return (
             <g key={i}>
               <line x1={PAD_LEFT} x2={WIDTH - PAD_RIGHT} y1={y} y2={y} className="gridline" />
               <text x={PAD_LEFT - 10} y={y} className="axis-label" textAnchor="end" dominantBaseline="middle">
-                {Math.round(t).toLocaleString()}
+                {formatNumber(tick, locale)}
               </text>
             </g>
           )
@@ -119,14 +121,14 @@ export function TrendChart({ points, targetVolumeKg }: Props) {
         })}
 
         <text x={last.x} y={last.y - 12} className="end-label" textAnchor="end">
-          {Math.round(last.point.volume).toLocaleString()}kg
+          {formatNumber(last.point.volume, locale)}kg
         </text>
 
         {coords.map((c, i) => {
           if (!showEveryLabel && i !== 0 && i !== coords.length - 1) return null
           return (
             <text key={i} x={c.x} y={HEIGHT - PAD_BOTTOM + 20} className="axis-label" textAnchor="middle">
-              {formatWeekLabel(c.point.weekStart)}
+              {formatWeekLabel(c.point.weekStart, locale)}
             </text>
           )
         })}
@@ -137,8 +139,8 @@ export function TrendChart({ points, targetVolumeKg }: Props) {
           className="chart-tooltip"
           style={{ left: `${(hovered.x / WIDTH) * 100}%`, top: `${(hovered.y / HEIGHT) * 100}%` }}
         >
-          <div className="tooltip-value">{Math.round(hovered.point.volume).toLocaleString()}kg</div>
-          <div className="tooltip-label">{formatWeekLabel(hovered.point.weekStart)}</div>
+          <div className="tooltip-value">{formatNumber(hovered.point.volume, locale)}kg</div>
+          <div className="tooltip-label">{formatWeekLabel(hovered.point.weekStart, locale)}</div>
         </div>
       )}
     </div>

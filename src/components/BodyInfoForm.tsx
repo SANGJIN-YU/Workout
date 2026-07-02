@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { BodyInfo } from '../types'
+import { useTranslation } from '../i18n/LanguageContext'
 
 interface Props {
   initial?: BodyInfo
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export function BodyInfoForm({ initial, onSubmit, submitLabel }: Props) {
+  const { t } = useTranslation()
   const [heightCm, setHeightCm] = useState(initial?.heightCm ?? 170)
   const [weightKg, setWeightKg] = useState(initial?.weightKg ?? 70)
   const [age, setAge] = useState(initial?.age ?? 30)
@@ -21,9 +23,9 @@ export function BodyInfoForm({ initial, onSubmit, submitLabel }: Props) {
         onSubmit({ heightCm, weightKg, age, sex })
       }}
     >
-      <h2>신체 정보</h2>
+      <h2>{t('bodyInfo', 'title')}</h2>
       <label className="field">
-        <span>키 (cm)</span>
+        <span>{t('bodyInfo', 'height')}</span>
         <input
           type="number"
           min={100}
@@ -34,7 +36,7 @@ export function BodyInfoForm({ initial, onSubmit, submitLabel }: Props) {
         />
       </label>
       <label className="field">
-        <span>몸무게 (kg)</span>
+        <span>{t('bodyInfo', 'weight')}</span>
         <input
           type="number"
           min={30}
@@ -46,15 +48,15 @@ export function BodyInfoForm({ initial, onSubmit, submitLabel }: Props) {
         />
       </label>
       <label className="field">
-        <span>나이</span>
+        <span>{t('bodyInfo', 'age')}</span>
         <input type="number" min={10} max={100} value={age} onChange={(e) => setAge(Number(e.target.value))} required />
       </label>
       <label className="field">
-        <span>성별 (선택)</span>
+        <span>{t('bodyInfo', 'sex')}</span>
         <select value={sex} onChange={(e) => setSex(e.target.value as BodyInfo['sex'])}>
-          <option value="unspecified">선택 안 함</option>
-          <option value="male">남성</option>
-          <option value="female">여성</option>
+          <option value="unspecified">{t('bodyInfo', 'sexNone')}</option>
+          <option value="male">{t('bodyInfo', 'sexMale')}</option>
+          <option value="female">{t('bodyInfo', 'sexFemale')}</option>
         </select>
       </label>
       <button type="submit" className="btn-primary">

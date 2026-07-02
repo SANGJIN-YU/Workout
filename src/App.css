@@ -10,6 +10,39 @@
 .app-header {
   text-align: center;
   margin-bottom: 8px;
+  position: relative;
+}
+
+.language-switcher {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--page-plane);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  margin-bottom: 12px;
+}
+
+.language-option {
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.language-option.active {
+  background: var(--series-1);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+.language-option:hover:not(.active) {
+  background: var(--series-1-wash);
+  color: var(--series-1);
 }
 
 .app-header h1 {

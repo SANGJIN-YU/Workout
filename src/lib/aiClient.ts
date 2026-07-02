@@ -1,3 +1,5 @@
+import type { Locale } from '../types'
+import { translate } from '../i18n/translations'
 import { parsePrescriptionResponse, type ParsedPrescription } from './prescriptionPrompt'
 
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages'
@@ -5,8 +7,12 @@ const DEFAULT_MODEL = 'claude-sonnet-5'
 
 export class AiRequestError extends Error {}
 
-/** 주 1회 호출되는 처방 생성 API. 브라우저에서 직접 Anthropic Messages API를 호출한다. */
-export async function requestPrescriptionFromAi(apiKey: string, prompt: string): Promise<ParsedPrescription> {
+/** Prescription-generation API called once a week. Calls the Anthropic Messages API directly from the browser. */
+export async function requestPrescriptionFromAi(
+  apiKey: string,
+  prompt: string,
+  locale: Locale,
+): Promise<ParsedPrescription> {
   const response = await fetch(ANTHROPIC_API_URL, {
     method: 'POST',
     headers: {
@@ -24,11 +30,11 @@ export async function requestPrescriptionFromAi(apiKey: string, prompt: string):
 
   if (!response.ok) {
     const body = await response.text().catch(() => '')
-    throw new AiRequestError(`AI 처방 요청 실패 (${response.status}): ${body.slice(0, 300)}`)
+    throw new AiRequestError(translate(locale, 'errors', 'aiRequestFailed', { status: response.status, body: body.slice(0, 300) }))
   }
 
   const data = await response.json()
   const text: string | undefined = data?.content?.[0]?.text
-  if (!text) throw new AiRequestError('AI 응답에 처방 내용이 없습니다.')
-  return parsePrescriptionResponse(text)
+  if (!text) throw new AiRequestError(translate(locale, 'errors', 'aiNoContent'))
+  return parsePrescriptionResponse(text, locale)
 }
