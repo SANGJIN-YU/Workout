@@ -40,6 +40,8 @@ export interface TranslationDict {
     totalVolume: string
     quickAddCustom: string
     exerciseNamePlaceholder: string
+    exerciseNameListLabel: string
+    dateLabel: string
     deleteExercise: string
     setHeader: string
     weightHeader: string
@@ -144,6 +146,8 @@ export const translations: Record<Locale, TranslationDict> = {
       totalVolume: '총 볼륨 {{value}}',
       quickAddCustom: '+ 직접 입력',
       exerciseNamePlaceholder: '운동 이름 (예: 스쿼트)',
+      exerciseNameListLabel: '자주 하는 운동',
+      dateLabel: '날짜',
       deleteExercise: '운동 삭제',
       setHeader: '세트',
       weightHeader: '무게(kg)',
@@ -251,6 +255,8 @@ export const translations: Record<Locale, TranslationDict> = {
       totalVolume: 'Total volume {{value}}',
       quickAddCustom: '+ Custom',
       exerciseNamePlaceholder: 'Exercise name (e.g. Squat)',
+      exerciseNameListLabel: 'Common exercises',
+      dateLabel: 'Date',
       deleteExercise: 'Delete exercise',
       setHeader: 'Set',
       weightHeader: 'Weight (kg)',
