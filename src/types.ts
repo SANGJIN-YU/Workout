@@ -46,11 +46,17 @@ export interface UserProfile {
   createdAt: string
 }
 
+export type Locale = 'ko' | 'en'
+
 export interface AppState {
   profile: UserProfile | null
   weeks: WeekLog[]
   prescriptions: Prescription[]
   anthropicApiKey: string | null
+  locale: Locale
 }
 
-export const BIG_THREE_EXERCISES = ['스쿼트', '벤치프레스', '데드리프트'] as const
+export const BIG_THREE_EXERCISES: Record<Locale, readonly string[]> = {
+  ko: ['스쿼트', '벤치프레스', '데드리프트'],
+  en: ['Squat', 'Bench Press', 'Deadlift'],
+}

@@ -1,9 +1,14 @@
-import type { AppState, Prescription, UserProfile, WeekLog } from '../types'
+import type { AppState, Locale, Prescription, UserProfile, WeekLog } from '../types'
 
 const STORAGE_KEY = 'trendfit.state.v1'
 
+function detectDefaultLocale(): Locale {
+  if (typeof navigator === 'undefined') return 'ko'
+  return navigator.language?.toLowerCase().startsWith('ko') ? 'ko' : 'en'
+}
+
 function emptyState(): AppState {
-  return { profile: null, weeks: [], prescriptions: [], anthropicApiKey: null }
+  return { profile: null, weeks: [], prescriptions: [], anthropicApiKey: null, locale: detectDefaultLocale() }
 }
 
 export function loadState(): AppState {
@@ -58,6 +63,13 @@ export function addPrescription(prescription: Prescription): AppState {
 export function saveApiKey(key: string | null): AppState {
   const state = loadState()
   const next = { ...state, anthropicApiKey: key }
+  saveState(next)
+  return next
+}
+
+export function saveLocale(locale: Locale): AppState {
+  const state = loadState()
+  const next = { ...state, locale }
   saveState(next)
   return next
 }

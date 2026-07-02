@@ -3,6 +3,8 @@ import type { ExerciseLog, WeekLog, WeightSet } from '../types'
 import { BIG_THREE_EXERCISES } from '../types'
 import { newId } from '../lib/date'
 import { weekVolume } from '../lib/volume'
+import { formatNumber } from '../i18n/format'
+import { useTranslation } from '../i18n/LanguageContext'
 
 interface Props {
   weekStart: string
@@ -15,7 +17,10 @@ function emptyExercise(name = ''): ExerciseLog {
 }
 
 export function WorkoutLogForm({ weekStart, initial, onSave }: Props) {
-  const [exercises, setExercises] = useState<ExerciseLog[]>(initial?.exercises ?? [emptyExercise('벤치프레스')])
+  const { t, locale } = useTranslation()
+  const [exercises, setExercises] = useState<ExerciseLog[]>(
+    initial?.exercises ?? [emptyExercise(t('workoutLog', 'defaultExerciseName'))],
+  )
 
   const draftWeek: WeekLog = { id: initial?.id ?? newId(), weekStart, exercises }
   const total = weekVolume(draftWeek)
@@ -57,18 +62,18 @@ export function WorkoutLogForm({ weekStart, initial, onSave }: Props) {
   return (
     <div className="card form-stack">
       <div className="row-between">
-        <h2>이번 주 웨이트 기록</h2>
-        <span className="volume-badge">총 볼륨 {Math.round(total).toLocaleString()}kg</span>
+        <h2>{t('workoutLog', 'title')}</h2>
+        <span className="volume-badge">{t('workoutLog', 'totalVolume', { value: `${formatNumber(total, locale)}kg` })}</span>
       </div>
 
       <div className="quick-add">
-        {BIG_THREE_EXERCISES.map((name) => (
+        {BIG_THREE_EXERCISES[locale].map((name) => (
           <button type="button" key={name} className="chip" onClick={() => addExercise(name)}>
             + {name}
           </button>
         ))}
         <button type="button" className="chip" onClick={() => addExercise('')}>
-          + 직접 입력
+          {t('workoutLog', 'quickAddCustom')}
         </button>
       </div>
 
@@ -80,13 +85,18 @@ export function WorkoutLogForm({ weekStart, initial, onSave }: Props) {
               <input
                 className="exercise-name"
                 type="text"
-                placeholder="운동 이름 (예: 스쿼트)"
+                placeholder={t('workoutLog', 'exerciseNamePlaceholder')}
                 value={ex.name}
                 onChange={(e) => updateExercise(ex.id, { name: e.target.value })}
               />
               <div className="row-inline">
-                <span className="muted">{Math.round(exVolume).toLocaleString()}kg</span>
-                <button type="button" className="icon-btn" onClick={() => removeExercise(ex.id)} aria-label="운동 삭제">
+                <span className="muted">{formatNumber(exVolume, locale)}kg</span>
+                <button
+                  type="button"
+                  className="icon-btn"
+                  onClick={() => removeExercise(ex.id)}
+                  aria-label={t('workoutLog', 'deleteExercise')}
+                >
                   ✕
                 </button>
               </div>
@@ -94,9 +104,9 @@ export function WorkoutLogForm({ weekStart, initial, onSave }: Props) {
             <table className="set-table">
               <thead>
                 <tr>
-                  <th>세트</th>
-                  <th>무게(kg)</th>
-                  <th>횟수</th>
+                  <th>{t('workoutLog', 'setHeader')}</th>
+                  <th>{t('workoutLog', 'weightHeader')}</th>
+                  <th>{t('workoutLog', 'repsHeader')}</th>
                   <th />
                 </tr>
               </thead>
@@ -122,7 +132,12 @@ export function WorkoutLogForm({ weekStart, initial, onSave }: Props) {
                       />
                     </td>
                     <td>
-                      <button type="button" className="icon-btn" onClick={() => removeSet(ex.id, i)} aria-label="세트 삭제">
+                      <button
+                        type="button"
+                        className="icon-btn"
+                        onClick={() => removeSet(ex.id, i)}
+                        aria-label={t('workoutLog', 'deleteSet')}
+                      >
                         ✕
                       </button>
                     </td>
@@ -131,7 +146,7 @@ export function WorkoutLogForm({ weekStart, initial, onSave }: Props) {
               </tbody>
             </table>
             <button type="button" className="chip" onClick={() => addSet(ex.id)}>
-              + 세트 추가
+              {t('workoutLog', 'addSet')}
             </button>
           </div>
         )
@@ -142,7 +157,7 @@ export function WorkoutLogForm({ weekStart, initial, onSave }: Props) {
         className="btn-primary"
         onClick={() => onSave({ ...draftWeek, exercises: exercises.filter((ex) => ex.name.trim() !== '') })}
       >
-        이번 주 기록 저장
+        {t('workoutLog', 'saveWeek')}
       </button>
     </div>
   )

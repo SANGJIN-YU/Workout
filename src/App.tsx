@@ -3,12 +3,15 @@ import type { AppState, Prescription, UserProfile, WeekLog } from './types'
 import { addPrescription, loadState, saveApiKey, saveProfile, upsertWeek } from './lib/storage'
 import { sortedWeeklyPoints } from './lib/volume'
 import { generatePrescription } from './lib/prescription'
-import { mondayOf, formatWeekLabel } from './lib/date'
+import { mondayOf } from './lib/date'
+import { formatWeekLabel } from './i18n/format'
+import { useTranslation } from './i18n/LanguageContext'
 import { Onboarding } from './components/Onboarding'
 import { WorkoutLogForm } from './components/WorkoutLogForm'
 import { TrendChart } from './components/TrendChart'
 import { PrescriptionCard } from './components/PrescriptionCard'
 import { ApiKeySettings } from './components/ApiKeySettings'
+import { LanguageSwitcher } from './components/LanguageSwitcher'
 import './App.css'
 
 function addWeeks(iso: string, delta: number): string {
@@ -18,6 +21,7 @@ function addWeeks(iso: string, delta: number): string {
 }
 
 export default function App() {
+  const { t, locale } = useTranslation()
   const [state, setState] = useState<AppState>(() => loadState())
   const [selectedWeekStart, setSelectedWeekStart] = useState<string>(() => mondayOf(new Date()))
   const [prescriptionLoading, setPrescriptionLoading] = useState(false)
@@ -55,10 +59,11 @@ export default function App() {
         state.profile.bodyInfo,
         state.weeks,
         state.anthropicApiKey,
+        locale,
       )
       setState(addPrescription(prescription))
     } catch (err) {
-      setPrescriptionError(err instanceof Error ? err.message : 'AI 처방 생성에 실패했습니다.')
+      setPrescriptionError(err instanceof Error ? err.message : t('errors', 'genericFailure'))
     } finally {
       setPrescriptionLoading(false)
     }
@@ -72,8 +77,9 @@ export default function App() {
     return (
       <div className="app-shell">
         <header className="app-header">
-          <h1>트렌드핏 TrendFit</h1>
-          <p className="tagline">추세를 읽고, 다음 주를 처방합니다.</p>
+          <LanguageSwitcher />
+          <h1>{t('app', 'title')}</h1>
+          <p className="tagline">{t('app', 'tagline')}</p>
         </header>
         <Onboarding onComplete={handleOnboardingComplete} />
       </div>
@@ -83,16 +89,25 @@ export default function App() {
   return (
     <div className="app-shell">
       <header className="app-header">
-        <h1>트렌드핏 TrendFit</h1>
-        <p className="tagline">추세를 읽고, 다음 주를 처방합니다.</p>
+        <LanguageSwitcher />
+        <h1>{t('app', 'title')}</h1>
+        <p className="tagline">{t('app', 'tagline')}</p>
       </header>
 
       <section className="week-nav card">
-        <button className="icon-btn" onClick={() => setSelectedWeekStart((w) => addWeeks(w, -1))} aria-label="이전 주">
+        <button
+          className="icon-btn"
+          onClick={() => setSelectedWeekStart((w) => addWeeks(w, -1))}
+          aria-label={t('weekNav', 'prevWeek')}
+        >
           ◀
         </button>
-        <span className="week-label">{formatWeekLabel(selectedWeekStart)}</span>
-        <button className="icon-btn" onClick={() => setSelectedWeekStart((w) => addWeeks(w, 1))} aria-label="다음 주">
+        <span className="week-label">{formatWeekLabel(selectedWeekStart, locale)}</span>
+        <button
+          className="icon-btn"
+          onClick={() => setSelectedWeekStart((w) => addWeeks(w, 1))}
+          aria-label={t('weekNav', 'nextWeek')}
+        >
           ▶
         </button>
       </section>
