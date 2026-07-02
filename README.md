@@ -40,6 +40,20 @@ npm run lint      # 타입 체크
 
 AI 처방을 사용하려면 앱 하단 "AI API 키 설정"에서 Anthropic API 키를 등록한다. 키가 없으면 자동으로 규칙 기반 처방으로 동작해 핵심 루프를 계속 검증할 수 있다.
 
+## 네이티브 앱 (Android / iOS)
+
+웹 코드를 그대로 [Capacitor](https://capacitorjs.com)로 감싸 Android/iOS 설치형 앱으로 빌드한다 (기획서 2-D의 조기 착수 — 반응 검증 전이므로 스토어 정식 배포보다는 실기기 설치·테스트가 목적).
+
+```bash
+npm run build         # dist/ 생성
+npx cap sync android   # 웹 빌드를 네이티브 프로젝트로 복사
+npx cap sync ios
+```
+
+- **Android**: `npx cap open android`로 Android Studio에서 열거나, `cd android && ./gradlew assembleDebug`로 직접 빌드. `.github/workflows/build-android.yml`이 `main` 푸시마다 디버그 APK를 빌드해 Actions 아티팩트로 올린다 (서명 없음 — 테스트 설치용).
+- **iOS**: `npx cap open ios`로 Xcode에서 열어 빌드/실행 (macOS + Xcode 필요, 이 원격 환경에는 없음). `.github/workflows/build-ios.yml`이 macOS 러너에서 시뮬레이터용으로 빌드해 프로젝트가 정상 컴파일되는지 검증한다. 실기기 설치나 앱스토어 배포는 Apple 개발자 계정과 서명 인증서가 있어야 하며, 이 저장소에는 아직 설정되어 있지 않다.
+- 앱 아이콘은 아직 Capacitor 기본 아이콘이다. `@capacitor/assets`로 `public/icon.svg` 기반 아이콘 세트를 생성해 교체할 수 있다.
+
 ## Phase 0 대응 현황
 
 | 코드 | 과업 | 상태 |
