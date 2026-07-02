@@ -15,6 +15,8 @@ export interface WeightSet {
 export interface ExerciseLog {
   id: string
   name: string
+  /** ISO date (YYYY-MM-DD) of the day this exercise was actually performed, within the parent week. */
+  date: string
   sets: WeightSet[]
 }
 

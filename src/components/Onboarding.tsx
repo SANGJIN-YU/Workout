@@ -16,6 +16,7 @@ function seedWeekFromVolume(weekStart: string, totalVolumeKg: number, exerciseNa
       {
         id: newId(),
         name: exerciseName,
+        date: weekStart,
         sets: [{ weightKg: totalVolumeKg, reps: 1 }],
       },
     ],

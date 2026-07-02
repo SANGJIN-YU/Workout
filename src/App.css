@@ -254,6 +254,20 @@
   gap: 10px;
 }
 
+.exercise-date-field {
+  max-width: 180px;
+  gap: 4px;
+}
+
+.exercise-date-field span {
+  font-size: 0.78rem;
+}
+
+.exercise-date-field input {
+  padding: 6px 10px;
+  font-size: 0.9rem;
+}
+
 .exercise-name {
   border: none;
   background: transparent;

@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import type { ExerciseLog, WeekLog, WeightSet } from '../types'
 import { BIG_THREE_EXERCISES } from '../types'
-import { newId } from '../lib/date'
+import { clampDateToWeek, defaultDateForWeek, newId, weekEndIso } from '../lib/date'
 import { weekVolume } from '../lib/volume'
 import { formatNumber } from '../i18n/format'
 import { useTranslation } from '../i18n/LanguageContext'
+import { EXERCISE_CATALOG } from '../i18n/exerciseCatalog'
 
 interface Props {
   weekStart: string
@@ -12,18 +13,26 @@ interface Props {
   onSave: (week: WeekLog) => void
 }
 
-function emptyExercise(name = ''): ExerciseLog {
-  return { id: newId(), name, sets: [{ weightKg: 0, reps: 0 }] }
+function emptyExercise(name: string, date: string): ExerciseLog {
+  return { id: newId(), name, date, sets: [{ weightKg: 0, reps: 0 }] }
 }
+
+/** Backfills a date for exercises saved before per-day logging existed. */
+function withDateFallback(exercises: ExerciseLog[], weekStart: string): ExerciseLog[] {
+  return exercises.map((ex) => ({ ...ex, date: ex.date ?? weekStart }))
+}
+
+const EXERCISE_DATALIST_ID = 'exercise-name-options'
 
 export function WorkoutLogForm({ weekStart, initial, onSave }: Props) {
   const { t, locale } = useTranslation()
   const [exercises, setExercises] = useState<ExerciseLog[]>(
-    initial?.exercises ?? [emptyExercise(t('workoutLog', 'defaultExerciseName'))],
+    initial ? withDateFallback(initial.exercises, weekStart) : [emptyExercise(t('workoutLog', 'defaultExerciseName'), defaultDateForWeek(weekStart))],
   )
 
   const draftWeek: WeekLog = { id: initial?.id ?? newId(), weekStart, exercises }
   const total = weekVolume(draftWeek)
+  const weekEnd = weekEndIso(weekStart)
 
   function updateExercise(id: string, patch: Partial<ExerciseLog>) {
     setExercises((prev) => prev.map((ex) => (ex.id === id ? { ...ex, ...patch } : ex)))
@@ -52,7 +61,7 @@ export function WorkoutLogForm({ weekStart, initial, onSave }: Props) {
   }
 
   function addExercise(name = '') {
-    setExercises((prev) => [...prev, emptyExercise(name)])
+    setExercises((prev) => [...prev, emptyExercise(name, defaultDateForWeek(weekStart))])
   }
 
   function removeExercise(id: string) {
@@ -65,6 +74,12 @@ export function WorkoutLogForm({ weekStart, initial, onSave }: Props) {
         <h2>{t('workoutLog', 'title')}</h2>
         <span className="volume-badge">{t('workoutLog', 'totalVolume', { value: `${formatNumber(total, locale)}kg` })}</span>
       </div>
+
+      <datalist id={EXERCISE_DATALIST_ID}>
+        {EXERCISE_CATALOG[locale].map((name) => (
+          <option key={name} value={name} />
+        ))}
+      </datalist>
 
       <div className="quick-add">
         {BIG_THREE_EXERCISES[locale].map((name) => (
@@ -85,7 +100,9 @@ export function WorkoutLogForm({ weekStart, initial, onSave }: Props) {
               <input
                 className="exercise-name"
                 type="text"
+                list={EXERCISE_DATALIST_ID}
                 placeholder={t('workoutLog', 'exerciseNamePlaceholder')}
+                aria-label={t('workoutLog', 'exerciseNameListLabel')}
                 value={ex.name}
                 onChange={(e) => updateExercise(ex.id, { name: e.target.value })}
               />
@@ -101,6 +118,16 @@ export function WorkoutLogForm({ weekStart, initial, onSave }: Props) {
                 </button>
               </div>
             </div>
+            <label className="field exercise-date-field">
+              <span>{t('workoutLog', 'dateLabel')}</span>
+              <input
+                type="date"
+                min={weekStart}
+                max={weekEnd}
+                value={ex.date}
+                onChange={(e) => updateExercise(ex.id, { date: clampDateToWeek(e.target.value, weekStart) })}
+              />
+            </label>
             <table className="set-table">
               <thead>
                 <tr>
