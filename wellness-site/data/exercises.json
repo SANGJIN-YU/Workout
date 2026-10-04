@@ -1,0 +1,65 @@
+{
+  "meta": {
+    "source": "Compendium of Physical Activities (2011)",
+    "sourceUrl": "https://pacompendium.com/",
+    "note": "verified=false 항목은 출판본 MET 값과 대조 후 true로 바꿔야 운영 배포가 허용됩니다."
+  },
+  "exercises": [
+    {
+      "id": "walking-brisk",
+      "name": "빠르게 걷기 (약 5.6km/h)",
+      "shortName": "걷기",
+      "met": 4.3,
+      "verified": false
+    },
+    {
+      "id": "running-6mph",
+      "name": "달리기 (약 9.7km/h)",
+      "shortName": "달리기",
+      "met": 9.8,
+      "verified": false
+    },
+    {
+      "id": "cycling-moderate",
+      "name": "자전거 타기 (보통 강도, 약 19~22km/h)",
+      "shortName": "자전거",
+      "met": 8.0,
+      "verified": false
+    },
+    {
+      "id": "swimming-freestyle-moderate",
+      "name": "자유형 수영 (가볍게~보통)",
+      "shortName": "수영",
+      "met": 5.8,
+      "verified": false
+    },
+    {
+      "id": "jump-rope-moderate",
+      "name": "줄넘기 (보통 강도)",
+      "shortName": "줄넘기",
+      "met": 11.8,
+      "verified": false
+    },
+    {
+      "id": "yoga-hatha",
+      "name": "하타 요가",
+      "shortName": "요가",
+      "met": 2.5,
+      "verified": false
+    },
+    {
+      "id": "resistance-training",
+      "name": "근력 운동 (여러 종목, 8~15회 반복)",
+      "shortName": "근력 운동",
+      "met": 3.5,
+      "verified": false
+    },
+    {
+      "id": "hiking",
+      "name": "등산·하이킹",
+      "shortName": "등산",
+      "met": 5.3,
+      "verified": false
+    }
+  ]
+}

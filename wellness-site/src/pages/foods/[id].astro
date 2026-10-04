@@ -1,0 +1,52 @@
+---
+import Base from '../../layouts/Base.astro';
+import SourceNote from '../../components/SourceNote.astro';
+import MedicalDisclaimer from '../../components/MedicalDisclaimer.astro';
+import Commentary from '../../components/Commentary.astro';
+import Affiliate from '../../components/Affiliate.astro';
+import { loadFoods, approvedCommentary } from '../../lib/data.mjs';
+import { NUTRIENTS, pickComparisons } from '../../lib/nutrition.mjs';
+
+export function getStaticPaths() {
+  const { foods } = loadFoods();
+  const comparisons = pickComparisons(foods);
+  return foods.map((food) => ({
+    params: { id: food.id },
+    props: { food, related: comparisons.filter((c) => c.a.id === food.id || c.b.id === food.id) },
+  }));
+}
+
+const { food, related } = Astro.props;
+const { meta } = loadFoods();
+const kcal = food.nutrients.energy_kcal;
+const commentary = approvedCommentary('food', food.id);
+---
+<Base
+  title={`${food.name} 영양성분 (${food.basis} 기준 ${kcal}kcal)`}
+  description={`${food.name} ${food.basis}당 열량 ${kcal}kcal, 탄수화물·단백질·지방·나트륨 함량을 정리했습니다.`}
+>
+  <h1>{food.name} 영양성분</h1>
+  <p class="note">분류: {food.category} · 기준량: {food.basis}</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>성분</th><th>함량</th></tr></thead>
+      <tbody>
+        {NUTRIENTS.map(({ key, label, unit }) => (
+          <tr><td>{label}</td><td>{food.nutrients[key] ?? '–'}{food.nutrients[key] != null && ` ${unit}`}</td></tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <Commentary text={commentary} />
+  {related.length > 0 && (
+    <section>
+      <h2>비슷한 식품과 비교</h2>
+      <ul class="links">
+        {related.map((c) => <li><a href={`/compare/${c.slug}/`}>{c.a.name} vs {c.b.name}</a></li>)}
+      </ul>
+    </section>
+  )}
+  <Affiliate group="food" />
+  <SourceNote source={meta.source} sourceUrl={meta.sourceUrl} updatedAt={meta.fetchedAt} />
+  <MedicalDisclaimer />
+</Base>

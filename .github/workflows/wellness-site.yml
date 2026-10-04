@@ -1,0 +1,87 @@
+# wellness-site 일일 데이터 갱신 + 배포.
+# AI 를 쓰지 않는다: 숫자 데이터만 갱신하고, 해설문은 노트북에서 사람이 승인한 것만 커밋으로 들어온다.
+#
+# 필요한 설정 (Settings → Secrets and variables → Actions):
+#   secrets.MFDS_API_KEY           공공데이터포털 인증키 (없으면 수집 단계 건너뜀)
+#   secrets.CLOUDFLARE_API_TOKEN   Cloudflare Pages 배포 토큰 (없으면 배포 단계 건너뜀)
+#   secrets.CLOUDFLARE_ACCOUNT_ID
+#   vars.CF_PAGES_PROJECT          Cloudflare Pages 프로젝트 이름
+#   vars.SITE_URL                  실제 도메인 (예: https://example.co.kr)
+#   vars.PUBLIC_ADSENSE_CLIENT     애드센스 승인 후 (ca-pub-...)
+#   vars.PUBLIC_CONTACT_EMAIL      사이트 문의 메일 (선택)
+name: wellness-site
+
+on:
+  schedule:
+    - cron: '0 18 * * *' # 매일 03:00 KST
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['wellness-site/**', '.github/workflows/wellness-site.yml']
+  pull_request:
+    paths: ['wellness-site/**', '.github/workflows/wellness-site.yml']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: wellness-site-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: wellness-site
+    env:
+      MFDS_API_KEY: ${{ secrets.MFDS_API_KEY }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      SITE_URL: ${{ vars.SITE_URL }}
+      PUBLIC_ADSENSE_CLIENT: ${{ vars.PUBLIC_ADSENSE_CLIENT }}
+      PUBLIC_CONTACT_EMAIL: ${{ vars.PUBLIC_CONTACT_EMAIL }}
+      IS_MAIN_RUN: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: wellness-site/package-lock.json
+
+      - run: npm ci
+
+      - name: 식약처 데이터 수집
+        if: env.MFDS_API_KEY != '' && env.IS_MAIN_RUN == 'true' && github.event_name != 'push'
+        run: npm run fetch:foods
+
+      - run: npm test
+
+      - name: 검증
+        run: npm run validate
+
+      - name: 데이터 변경분 커밋
+        if: env.IS_MAIN_RUN == 'true' && github.event_name != 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/foods.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "데이터 변경 없음"
+          else
+            git commit -m "wellness-site: 식품 데이터 자동 갱신"
+            git push
+          fi
+
+      - run: npm run build
+
+      - name: 배포 전 운영 검증 (샘플 데이터·미확인 값 차단)
+        id: prod-check
+        if: env.CLOUDFLARE_API_TOKEN != '' && env.IS_MAIN_RUN == 'true'
+        run: npm run validate -- --production
+
+      - name: Cloudflare Pages 배포
+        if: steps.prod-check.outcome == 'success'
+        run: npx --yes wrangler@4 pages deploy dist --project-name="${{ vars.CF_PAGES_PROJECT }}" --branch=main

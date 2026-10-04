@@ -1,0 +1,16 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../config/site.mjs';
+---
+<Base title="소개" description={`${SITE.name} 소개와 데이터 출처, 운영 방식 안내`}>
+  <h1>소개</h1>
+  <p>{SITE.name}는 식품 영양성분과 운동 소모 열량을 공개 데이터로 쉽게 확인할 수 있도록 정리한 사이트입니다.</p>
+  <h2>데이터 출처</h2>
+  <ul class="links">
+    <li>식품 영양성분: 식품의약품안전처 식품영양성분 데이터베이스 (공공데이터포털)</li>
+    <li>운동 강도(MET): Compendium of Physical Activities</li>
+  </ul>
+  <h2>운영 방식</h2>
+  <p>수치 데이터는 자동으로 갱신됩니다. 일부 페이지의 해설문은 AI의 도움을 받아 작성한 뒤 운영자가 검토하여 게시합니다. 해설문은 데이터를 설명할 뿐 건강 효과를 주장하지 않습니다.</p>
+  {SITE.contactEmail && <p>문의: <a href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a></p>}
+</Base>

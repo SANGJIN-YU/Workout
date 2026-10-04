@@ -1,0 +1,22 @@
+---
+import Base from '../../layouts/Base.astro';
+import { loadExercises } from '../../lib/data.mjs';
+import { caloriesBurned } from '../../lib/exercise.mjs';
+
+const { exercises } = loadExercises();
+const sorted = [...exercises].sort((x, y) => y.met - x.met);
+---
+<Base title="운동별 소모 열량" description="걷기, 달리기, 수영, 줄넘기 등 운동별로 체중과 시간에 따른 소모 열량을 정리했습니다.">
+  <h1>운동별 소모 열량</h1>
+  <p>체중 60kg 기준 30분 운동 시 추정 소모 열량입니다.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>운동</th><th>MET</th><th>30분 (60kg)</th></tr></thead>
+      <tbody>
+        {sorted.map((e) => (
+          <tr><td><a href={`/exercise/${e.id}/`}>{e.name}</a></td><td>{e.met}</td><td>{caloriesBurned(e.met, 60, 30)} kcal</td></tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</Base>

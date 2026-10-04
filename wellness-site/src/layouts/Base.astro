@@ -1,0 +1,105 @@
+---
+import { SITE } from '../config/site.mjs';
+import { loadFoods } from '../lib/data.mjs';
+
+interface Props {
+  title: string;
+  description: string;
+}
+const { title, description } = Astro.props;
+const fullTitle = title === SITE.name ? title : `${title} | ${SITE.name}`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const isSample = loadFoods().meta.isSample;
+---
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    {isSample && <meta name="robots" content="noindex" />}
+    {SITE.adsenseClient && (
+      <script
+        async
+        src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${SITE.adsenseClient}`}
+        crossorigin="anonymous"
+      ></script>
+    )}
+  </head>
+  <body>
+    {isSample && <div class="sample-banner">개발용 샘플 데이터입니다. 실제 영양성분 값이 아닙니다.</div>}
+    <header>
+      <a class="brand" href="/">{SITE.name}</a>
+      <nav>
+        <a href="/foods/">식품 영양성분</a>
+        <a href="/exercise/">운동 소모 열량</a>
+        <a href="/tools/bmr/">기초대사량 계산기</a>
+      </nav>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer>
+      <p>이 사이트의 정보는 일반적인 참고용이며 의학적 진단이나 상담을 대신하지 않습니다.</p>
+      <nav>
+        <a href="/about/">소개</a>
+        <a href="/disclaimer/">면책 고지</a>
+        <a href="/privacy/">개인정보처리방침</a>
+      </nav>
+    </footer>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    --bg: #fbfbf8;
+    --fg: #1f2421;
+    --muted: #5d665f;
+    --accent: #2f7d5b;
+    --line: #dfe3dd;
+    --card: #ffffff;
+    --warn-bg: #fff4d6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141816;
+      --fg: #e6ebe7;
+      --muted: #9aa59d;
+      --accent: #6cc59b;
+      --line: #2c3430;
+      --card: #1b201d;
+      --warn-bg: #3a3218;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: system-ui, -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    line-height: 1.7;
+  }
+  header, main, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; justify-content: space-between; padding-top: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+  header nav, footer nav { display: flex; flex-wrap: wrap; gap: 4px 16px; }
+  a { color: var(--accent); }
+  .brand { font-weight: 700; text-decoration: none; color: var(--fg); }
+  main { padding-top: 24px; padding-bottom: 48px; }
+  footer { border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; padding-top: 16px; padding-bottom: 32px; }
+  h1 { font-size: 1.6rem; line-height: 1.35; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th, td { padding: 8px; border-bottom: 1px solid var(--line); text-align: right; }
+  th:first-child, td:first-child { text-align: left; }
+  .table-wrap { overflow-x: auto; }
+  .note { color: var(--muted); font-size: 14px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 16px; margin: 16px 0; }
+  .sample-banner { background: var(--warn-bg); text-align: center; padding: 8px 16px; font-size: 14px; }
+  ul.links { padding-left: 20px; }
+</style>

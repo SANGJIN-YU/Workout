@@ -1,0 +1,23 @@
+---
+import Base from '../../layouts/Base.astro';
+import SourceNote from '../../components/SourceNote.astro';
+import { loadFoods } from '../../lib/data.mjs';
+
+const { meta, foods } = loadFoods();
+const byCategory = Object.groupBy(foods, (f) => f.category);
+const categories = Object.keys(byCategory).sort((a, b) => a.localeCompare(b, 'ko'));
+---
+<Base title="식품 영양성분" description="식품별 열량, 탄수화물, 단백질, 지방, 나트륨 등 영양성분을 분류별로 정리했습니다.">
+  <h1>식품 영양성분</h1>
+  {categories.map((c) => (
+    <section>
+      <h2>{c}</h2>
+      <ul class="links">
+        {byCategory[c]!
+          .sort((a, b) => a.name.localeCompare(b.name, 'ko'))
+          .map((f) => <li><a href={`/foods/${f.id}/`}>{f.name}</a></li>)}
+      </ul>
+    </section>
+  ))}
+  <SourceNote source={meta.source} sourceUrl={meta.sourceUrl} updatedAt={meta.fetchedAt} />
+</Base>

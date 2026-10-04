@@ -1,0 +1,55 @@
+---
+import Base from '../../layouts/Base.astro';
+import MedicalDisclaimer from '../../components/MedicalDisclaimer.astro';
+import Affiliate from '../../components/Affiliate.astro';
+import { ACTIVITY_LEVELS } from '../../lib/bmr.mjs';
+---
+<Base title="기초대사량 계산기" description="성별, 나이, 키, 몸무게로 하루 기초대사량(BMR)과 활동대사량(TDEE)을 계산합니다. 입력값은 서버로 전송되지 않습니다.">
+  <h1>기초대사량 계산기</h1>
+  <form id="bmr-form" class="card">
+    <fieldset style="border:0;padding:0;margin:0 0 12px">
+      <legend>성별</legend>
+      <label><input type="radio" name="sex" value="male" checked /> 남성</label>
+      <label><input type="radio" name="sex" value="female" /> 여성</label>
+    </fieldset>
+    <p><label>나이 <input name="age" type="number" min="15" max="100" value="30" required /> 세</label></p>
+    <p><label>키 <input name="height" type="number" min="100" max="230" step="0.1" value="170" required /> cm</label></p>
+    <p><label>몸무게 <input name="weight" type="number" min="30" max="250" step="0.1" value="65" required /> kg</label></p>
+    <p>
+      <label>활동량
+        <select name="activity">
+          {ACTIVITY_LEVELS.map((l) => <option value={l.key} selected={l.key === 'light'}>{l.label}</option>)}
+        </select>
+      </label>
+    </p>
+    <button type="submit">계산하기</button>
+  </form>
+  <div id="result" class="card" hidden aria-live="polite"></div>
+  <section>
+    <h2>계산 방법</h2>
+    <p>Mifflin-St Jeor 공식을 사용합니다. 남성은 10×체중 + 6.25×키 − 5×나이 + 5, 여성은 마지막에 5 대신 161을 뺍니다. 활동대사량은 기초대사량에 활동량 계수(1.2~1.9)를 곱한 추정치입니다.</p>
+    <p class="note">입력한 값은 브라우저 안에서만 계산되며 저장하거나 전송하지 않습니다.</p>
+  </section>
+  <Affiliate group="bmr" />
+  <MedicalDisclaimer />
+</Base>
+
+<script>
+  import { mifflinStJeor, estimateTdee } from '../../lib/bmr.mjs';
+
+  const form = document.getElementById('bmr-form') as HTMLFormElement;
+  const result = document.getElementById('result') as HTMLDivElement;
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const data = new FormData(form);
+    const bmr = mifflinStJeor({
+      sex: String(data.get('sex')),
+      age: Number(data.get('age')),
+      heightCm: Number(data.get('height')),
+      weightKg: Number(data.get('weight')),
+    });
+    const tdee = estimateTdee(bmr, String(data.get('activity')));
+    result.hidden = false;
+    result.innerHTML = `<p>기초대사량: <strong>${bmr.toLocaleString()} kcal/일</strong></p><p>활동대사량(추정): <strong>${tdee.toLocaleString()} kcal/일</strong></p>`;
+  });
+</script>

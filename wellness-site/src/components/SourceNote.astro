@@ -1,0 +1,12 @@
+---
+interface Props {
+  source: string;
+  sourceUrl?: string | null;
+  updatedAt?: string | null;
+}
+const { source, sourceUrl, updatedAt } = Astro.props;
+---
+<p class="note">
+  출처: {sourceUrl ? <a href={sourceUrl} rel="nofollow noopener" target="_blank">{source}</a> : source}
+  {updatedAt && <> · 데이터 갱신일 {updatedAt.slice(0, 10)}</>}
+</p>

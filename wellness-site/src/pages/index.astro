@@ -1,0 +1,28 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../config/site.mjs';
+import { loadFoods, loadExercises } from '../lib/data.mjs';
+import { pickComparisons } from '../lib/nutrition.mjs';
+
+const { foods } = loadFoods();
+const comparisons = pickComparisons(foods).slice(0, 10);
+const { exercises } = loadExercises();
+---
+<Base title={SITE.name} description={SITE.description}>
+  <h1>{SITE.name}</h1>
+  <p>식약처 식품영양성분 데이터베이스 같은 공개 자료를 바탕으로 식품 영양성분과 운동 소모 열량을 정리합니다.</p>
+
+  <h2>기초대사량 계산기</h2>
+  <p><a href="/tools/bmr/">키·몸무게·나이로 하루 기초대사량과 활동대사량 추정하기 →</a></p>
+
+  <h2>식품 영양성분 비교</h2>
+  <ul class="links">
+    {comparisons.map(({ slug, a, b }) => <li><a href={`/compare/${slug}/`}>{a.name} vs {b.name}</a></li>)}
+  </ul>
+  <p><a href="/foods/">전체 식품 {foods.length}개 보기 →</a></p>
+
+  <h2>운동 소모 열량</h2>
+  <ul class="links">
+    {exercises.map((e) => <li><a href={`/exercise/${e.id}/`}>{e.name}</a></li>)}
+  </ul>
+</Base>

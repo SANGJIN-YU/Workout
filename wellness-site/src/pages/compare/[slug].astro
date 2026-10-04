@@ -1,0 +1,43 @@
+---
+import Base from '../../layouts/Base.astro';
+import SourceNote from '../../components/SourceNote.astro';
+import MedicalDisclaimer from '../../components/MedicalDisclaimer.astro';
+import Commentary from '../../components/Commentary.astro';
+import Affiliate from '../../components/Affiliate.astro';
+import { loadFoods, approvedCommentary } from '../../lib/data.mjs';
+import { compareFoods, pickComparisons } from '../../lib/nutrition.mjs';
+
+export function getStaticPaths() {
+  const { foods } = loadFoods();
+  return pickComparisons(foods).map(({ slug, a, b }) => ({ params: { slug }, props: { slug, a, b } }));
+}
+
+const { slug, a, b } = Astro.props;
+const { meta } = loadFoods();
+const rows = compareFoods(a, b);
+const commentary = approvedCommentary('compare', slug);
+const fmt = (v: number | null, unit: string) => (v === null ? '–' : `${v} ${unit}`);
+const fmtDiff = (v: number | null, unit: string) => (v === null ? '–' : `${v > 0 ? '+' : ''}${v} ${unit}`);
+---
+<Base
+  title={`${a.name} vs ${b.name} 영양성분 비교`}
+  description={`${a.name}와(과) ${b.name}의 ${a.basis}당 열량(${a.nutrients.energy_kcal} vs ${b.nutrients.energy_kcal}kcal), 탄수화물, 단백질, 지방, 나트륨을 비교했습니다.`}
+>
+  <h1>{a.name} vs {b.name} 영양성분 비교</h1>
+  <p class="note">기준량: {a.basis} · 차이는 {b.name} − {a.name}</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>성분</th><th>{a.name}</th><th>{b.name}</th><th>차이</th></tr></thead>
+      <tbody>
+        {rows.map((r) => (
+          <tr><td>{r.label}</td><td>{fmt(r.a, r.unit)}</td><td>{fmt(r.b, r.unit)}</td><td>{fmtDiff(r.diff, r.unit)}</td></tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <Commentary text={commentary} />
+  <p><a href={`/foods/${a.id}/`}>{a.name} 상세</a> · <a href={`/foods/${b.id}/`}>{b.name} 상세</a></p>
+  <Affiliate group="food" />
+  <SourceNote source={meta.source} sourceUrl={meta.sourceUrl} updatedAt={meta.fetchedAt} />
+  <MedicalDisclaimer />
+</Base>

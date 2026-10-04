@@ -1,0 +1,19 @@
+---
+import { AFFILIATE_LINKS, COUPANG_DISCLOSURE } from '../config/affiliate.mjs';
+
+interface Props {
+  group: keyof typeof AFFILIATE_LINKS;
+}
+const links = AFFILIATE_LINKS[Astro.props.group] ?? [];
+---
+{links.length > 0 && (
+  <aside class="card">
+    <strong>함께 보면 좋은 도구</strong>
+    <ul class="links">
+      {links.map((l) => (
+        <li><a href={l.url} rel="sponsored nofollow noopener" target="_blank">{l.label}</a></li>
+      ))}
+    </ul>
+    <p class="note">{COUPANG_DISCLOSURE}</p>
+  </aside>
+)}
